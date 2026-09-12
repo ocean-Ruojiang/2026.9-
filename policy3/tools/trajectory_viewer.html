@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Policy 3 · 轨迹与操作回放</title>
+<style>
+:root{color-scheme:light;--ink:#142c3a;--muted:#58717e;--line:#c6d5d8;--paper:#f3f6f4;--teal:#007d83;--blue:#2467bd;--green:#16804e;--red:#c33d35;--gold:#bd6d0e}
+*{box-sizing:border-box}body{margin:0;font:14px/1.5 system-ui,"Microsoft YaHei",sans-serif;color:var(--ink);background:var(--paper)}
+header{padding:22px 28px 15px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:20px;align-items:center}
+h1{font-size:24px;letter-spacing:.02em;margin:0;font-weight:650}.eyebrow{font-size:11px;letter-spacing:.16em;color:var(--teal);font-weight:700}.subtitle{color:var(--muted);margin-top:3px;font-size:12px}
+main{padding:18px 28px;max-width:1680px;margin:auto}.selectors{display:grid;grid-template-columns:minmax(280px,1fr) 130px 175px;gap:14px;align-items:end}
+label{color:var(--muted)}select,button,input{font:inherit}select{width:100%;padding:8px;background:#fff;border:1px solid var(--line);color:var(--ink);border-radius:3px}button{padding:7px 13px;border:1px solid var(--line);background:#fff;border-radius:3px;color:var(--ink);cursor:pointer}button:hover{background:#e2eeeb}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.controls{display:flex;align-items:center;flex-wrap:wrap;gap:16px;margin:13px 0 16px}.controls label{display:flex;align-items:center;gap:5px;color:var(--ink)}.controls .truth{margin-left:auto}.small{font-size:12px;color:var(--muted)}
+.layout{display:grid;grid-template-columns:minmax(420px,1fr) 350px;gap:22px}.map{background:#fff;border:1px solid var(--line);position:relative;min-height:560px}.map canvas{display:block;width:100%;height:600px}.legend{position:absolute;left:14px;top:11px;display:flex;gap:14px;flex-wrap:wrap;background:rgba(255,255,255,.94);font-size:12px;padding:4px 7px}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}.measure{background:var(--blue)}.success{background:var(--green)}.failure{background:var(--red)}.truthmark{background:var(--gold)}
+.side{min-width:0}.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:14px}.stat span{display:block;color:var(--muted);font-size:12px}.stat strong{font-size:21px;font-weight:600}.detail{min-height:172px;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:14px 0}.detail h2{font-size:16px;margin:0 0 9px}.detail p{margin:3px 0}.scroll{height:310px;overflow:auto;background:#fff;border:1px solid var(--line)}table{border-collapse:collapse;width:100%;font-size:12px}th,td{padding:7px 8px;text-align:left;border-bottom:1px solid #e4ecea;white-space:nowrap}thead{position:sticky;top:0;background:#eaf0ed;z-index:1}tbody tr{cursor:pointer}tbody tr:hover,tbody tr.selected{background:#e0f0e9}
+.timeline{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin-top:16px}.timeline input{width:100%;accent-color:var(--teal)}.footer{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px;color:var(--muted);font-size:12px}.tip{position:absolute;pointer-events:none;background:#142c3a;color:#fff;font-size:12px;padding:8px 10px;max-width:260px;display:none;z-index:2;border-radius:3px}
+@media(max-width:1000px){.layout{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr;gap:14px}.stats{grid-column:1/-1}.scroll{height:240px}.detail{margin:0}.map canvas{height:540px}.map{min-height:540px}}
+@media(max-width:600px){header,main{padding:14px}.selectors{grid-template-columns:1fr 1fr}.selectors label:first-child{grid-column:1/-1}.layout{display:block}.map,.map canvas{min-height:380px;height:420px}.side{margin-top:14px;display:block}.legend{font-size:11px;gap:7px}.controls{gap:10px}.controls .truth{margin-left:0}.timeline{grid-template-columns:auto 1fr}.timeline output{grid-column:1/-1}.subtitle{max-width:270px}h1{font-size:20px}.scroll{height:250px}}
+</style>
+</head>
+<body>
+<header><div><div class="eyebrow">POLICY 3 / EXPERIMENT REPLAY</div><h1>机器狗轨迹与操作回放</h1><div class="subtitle">根据已完成的模拟器日志回放 · 坐标单位：米</div></div><button id="download">导出当前图 PNG</button></header>
+<main>
+<p id="loadStatus" role="status" style="padding:14px;border:1px solid #bd6d0e;background:#fff9e9">正在加载回放。若此提示一直存在，请使用 Edge 或 Chrome 打开生成的 HTML，或运行 policy3/open_replay.cmd。</p>
+<noscript><p>此页面需要 JavaScript。请在 Edge 或 Chrome 浏览器中打开，不要使用编辑器的 Markdown 预览。</p></noscript>
+<div class="selectors">
+<label>选择测试局<select id="caseSelect" aria-label="选择测试局"></select></label>
+<label>操作频道<select id="channelSelect" aria-label="操作频道"></select></label>
+<label>测量结果<select id="resultSelect"><option value="all">全部测量结果</option><option value="direction">测得方向</option><option value="near">近距离反馈</option><option value="no_signal">无信号</option></select></label>
+</div>
+<div class="controls">
+<label><input type="checkbox" data-operation="move">移动轨迹</label>
+<label><input type="checkbox" data-operation="measure">检测 / 测向</label>
+<label><input type="checkbox" data-operation="clear_success">清除成功</label>
+<label><input type="checkbox" data-operation="clear_failure">清除失败</label>
+<label><input id="bearingToggle" type="checkbox">显示示向线</label>
+<label><input id="stationToggle" type="checkbox" checked>检查站</label>
+<label><input id="rangeToggle" type="checkbox">真实发射范围（事后）</label>
+<label class="truth"><input id="truthToggle" type="checkbox">叠加真实目标（事后）</label>
+</div>
+<div class="layout">
+<section class="map" aria-label="机器狗移动轨迹，横轴东向坐标、纵轴北向坐标，单位米">
+<canvas id="mapCanvas" role="img" aria-label="轨迹与所选操作"></canvas>
+<div class="legend"><span><i class="dot measure"></i>测量 · 圆</span><span><i class="dot success"></i>清除成功 · 方</span><span><i class="dot failure"></i>清除失败 · 叉</span><span id="truthLegend" hidden><i class="dot truthmark"></i>真实目标 · 菱形</span></div>
+<div class="tip" id="tooltip" role="tooltip"></div>
+</section>
+<aside class="side">
+<div class="stats"><div class="stat"><span>当前 / 全局虚拟时间（秒）</span><strong id="virtualStat">—</strong></div><div class="stat"><span>当前清除 / 目标总数</span><strong id="clearStat">—</strong></div><div class="stat"><span>已走距离（米）</span><strong id="distanceStat">—</strong></div><div class="stat"><span>规划 / 程序运行（秒）</span><strong id="programStat">—</strong></div></div>
+<div class="detail" id="detail"><h2>选择一个操作</h2><p class="small">点击图中标记或操作列表查看细节。</p></div>
+<div><div class="small" id="listTitle">操作列表</div><div class="scroll"><table><thead><tr><th>序号</th><th>操作</th><th>频道</th><th>虚拟秒</th></tr></thead><tbody id="actionRows"></tbody></table></div></div>
+</aside>
+</div>
+<div class="timeline"><button id="play">从头播放</button><input id="step" type="range" min="0" value="0" aria-label="动作回放进度"><output id="stepLabel">0 / 0</output></div>
+<div class="footer"><span id="caseMeta"></span><span>筛选仅改变标记和操作列表，轨迹始终按真实动作顺序连接。</span><span>播放按动作步推进，不按真实时间等速。范围叠加为事后真值：圆形为全向，半圆为定向；可选单频道查看。</span></div>
+</main>
+<script id="data" type="application/json">__TRAJECTORY_DATA__</script>
+<script>
+'use strict';
+(()=>{
+const status=document.getElementById('loadStatus');
+window.addEventListener('error',event=>{status.hidden=false;status.textContent='回放加载失败：'+event.message+'。请使用 Edge 或 Chrome 打开 results 目录中生成的回放文件。'});
+let data;
+try{
+data=JSON.parse(document.getElementById('data').textContent);
+if(!Array.isArray(data.cases)||!data.cases.length)throw new Error('没有测试局数据');
+}catch(error){
+status.textContent='此文件没有可读取的回放数据。如果打开的是 tools/trajectory_viewer.html，它是界面模板。请运行 policy3/open_replay.cmd，或打开 results/acceptance_15_20260913/trajectory_viewer.html。';
+document.querySelectorAll('button,select,input').forEach(el=>{el.disabled=true});
+return;
+}
+const $=id=>document.getElementById(id), canvas=$('mapCanvas'),ctx=canvas.getContext('2d');
+let active=data.initialCase,step=0,selected=null,timer=null,hitMarks=[],project=null,width=0,height=0;
+const names={measure:'测量',clear_success:'清除成功',clear_failure:'清除失败'};
+const outcomes={direction:'测得方向',near:'近距离',no_signal:'无信号',success:'成功',no_target_in_range:'范围内无目标'};
+const modes={O:'原点扫描',I:'内层探索',M:'中层探索',E:'外层巡检',DONE:'覆盖完成',initial:'原点扫描',station:'必要站点扫描',optional:'沿途可选操作',station_extra:'站点附加操作',finish:'锁定目标收尾',finish_extra:'收尾附加操作',grid:'网格清除',near:'近距离优先清除'};
+const colors={measure:'#2467bd',clear_success:'#16804e',clear_failure:'#c33d35'};
+const number=(x,d=2)=>x==null?'—':Number(x).toFixed(d);
+function current(){return data.cases[active]}
+function visible(a){return document.querySelector('[data-operation="'+a.category+'"]').checked&&(!$('channelSelect').value||a.channel===Number($('channelSelect').value))&&(a.kind!=='measure'||$('resultSelect').value==='all'||a.result===$('resultSelect').value)}
+data.cases.forEach((c,i)=>{let option=document.createElement('option');option.value=i;option.textContent=(i+1)+'. '+c.label+' · seed '+c.seed;$('caseSelect').append(option)});
+$('caseSelect').value=active;
+for(let i=0;i<=20;i++){let option=document.createElement('option');option.value=i||'';option.textContent=i?'频道 '+i:'全部频道';$('channelSelect').append(option)}
+$('channelSelect').value=data.channel||'';
+document.querySelectorAll('[data-operation]').forEach(el=>{el.checked=data.operations.includes(el.dataset.operation);el.addEventListener('change',render)});
+for(const id of ['channelSelect','resultSelect','truthToggle','bearingToggle','stationToggle','rangeToggle'])$(id).addEventListener('change',render);
+function stop(){if(timer)clearInterval(timer);timer=null;$('play').textContent=step>=current().actions.length?'从头播放':'播放'}
+function openCase(){stop();step=current().actions.length;selected=null;$('step').max=step;$('step').value=step;render()}
+$('caseSelect').addEventListener('change',()=>{active=Number($('caseSelect').value);openCase()});
+$('step').addEventListener('input',()=>{stop();step=Number($('step').value);selected=null;render()});
+$('play').addEventListener('click',()=>{if(timer){stop();return}if(step>=current().actions.length)step=0;$('play').textContent='暂停';timer=setInterval(()=>{step=Math.min(step+1,current().actions.length);$('step').value=step;selected=null;render();if(step>=current().actions.length)stop()},160)});
+function textCell(row,text){const cell=document.createElement('td');cell.textContent=text;row.append(cell)}
+function detail(a){const panel=$('detail');panel.replaceChildren();const h=document.createElement('h2');h.textContent=a?'第 '+a.index+' 步 · '+names[a.category]:'选择一个操作';panel.append(h);if(!a){const p=document.createElement('p');p.className='small';p.textContent='点击图中标记或操作列表查看坐标、反馈和策略阶段。';panel.append(p);return}
+const lines=['频道 '+a.channel+' · '+(outcomes[a.result]||a.result),'位置 ('+number(a.point[0])+', '+number(a.point[1])+') 米','虚拟时间 '+number(a.time)+' 秒 · 本次 '+number(a.elapsed)+' 秒','本次移动 '+number(a.distance)+' 米','阶段：'+(modes[a.mode]||a.mode||'未记录')];if(a.reason)lines.push('决策原因：'+a.reason);if(a.template)lines.push('操作模板：'+a.template);if(a.budget!=null)lines.push('决策前剩余绕路预算：'+number(a.budget)+' 秒');if(a.bearing!=null)lines.push('示向度 '+number(a.bearing)+'°');for(const line of lines){let p=document.createElement('p');p.textContent=line;panel.append(p)}}
+function selectAction(a){selected=a;draw();detail(a);for(const row of $('actionRows').children)row.classList.toggle('selected',Number(row.dataset.index)===a.index)}
+function render(){const c=current(),shown=c.actions.slice(0,step);const filtered=shown.filter(visible);$('virtualStat').textContent=number(shown.at(-1)?.time||0,1)+' / '+number(c.virtual_time,1);$('clearStat').textContent=shown.filter(a=>a.category==='clear_success').length+' / '+c.target_count;$('distanceStat').textContent=number(shown.reduce((s,a)=>s+a.distance,0),0);$('programStat').textContent=number(c.planning_time,3)+' / '+number(c.program_time,3);$('stepLabel').textContent=step+' / '+c.actions.length+' 步';$('caseMeta').textContent='种子 '+c.seed+' · '+c.layout+' · 接收半径 '+c.radius_mode+' · '+(c.run_ok?'本局全清并正常退出':'请检查本局结束状态');$('truthLegend').hidden=!$('truthToggle').checked;$('actionRows').replaceChildren();
+for(const a of filtered){const row=document.createElement('tr');row.tabIndex=0;row.dataset.index=a.index;textCell(row,a.index);textCell(row,names[a.category]+(a.kind==='measure'?' / '+(outcomes[a.result]||a.result):''));textCell(row,a.channel);textCell(row,number(a.time,1));row.addEventListener('click',()=>selectAction(a));row.addEventListener('keydown',e=>{if(e.key==='Enter')selectAction(a)});$('actionRows').append(row)}
+$('listTitle').textContent='当前筛选：'+filtered.length+' 个操作';if(selected&&!filtered.includes(selected))selected=null;detail(selected);draw()}
+function draw(){width=canvas.clientWidth;height=canvas.clientHeight;if(width<120||height<140)return;const dpr=window.devicePixelRatio||1;canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#ffffff';ctx.fillRect(0,0,width,height);const c=current(),shown=c.actions.slice(0,step);let bound=1800;for(const a of c.actions)bound=Math.max(bound,Math.abs(a.point[0]),Math.abs(a.point[1]));bound*=1.12;const margin={left:66,right:25,top:52,bottom:49};const scale=Math.min((width-margin.left-margin.right)/(2*bound),(height-margin.top-margin.bottom)/(2*bound));const cx=margin.left+(width-margin.left-margin.right)/2,cy=margin.top+(height-margin.top-margin.bottom)/2;project=p=>[cx+p[0]*scale,cy-p[1]*scale];const x0=cx-bound*scale,x1=cx+bound*scale,y0=cy-bound*scale,y1=cy+bound*scale;
+ctx.save();ctx.beginPath();ctx.rect(x0,y0,x1-x0,y1-y0);ctx.clip();ctx.strokeStyle='#e4ecea';ctx.lineWidth=1;let tick=bound>3500?2000:1000;for(let v=Math.ceil(-bound/tick)*tick;v<=bound;v+=tick){let a=project([v,0]),b=project([0,v]);ctx.beginPath();ctx.moveTo(a[0],y0);ctx.lineTo(a[0],y1);ctx.moveTo(x0,b[1]);ctx.lineTo(x1,b[1]);ctx.stroke()}
+ctx.setLineDash([5,5]);ctx.strokeStyle='#99adaa';ctx.beginPath();ctx.arc(cx,cy,1800*scale,0,2*Math.PI);ctx.stroke();ctx.setLineDash([]);
+if($('stationToggle').checked){for(const s of data.stations||[]){const [x,y]=project([s.x,s.y]);ctx.strokeStyle=s.group==='E'?'#905ca4':'#9aaca7';ctx.fillStyle=ctx.strokeStyle;ctx.lineWidth=1;ctx.strokeRect(x-5,y-5,10,10);ctx.font='11px system-ui';ctx.fillText(s.id,x+7,y-7)}}
+if($('rangeToggle').checked){for(const s of c.sources){if($('channelSelect').value&&s.channel!==Number($('channelSelect').value))continue;const [x,y]=project([s.x,s.y]);const r=s.radius*scale;ctx.beginPath();if(s.direction==null){ctx.arc(x,y,r,0,2*Math.PI)}else{const a=-s.direction*Math.PI/180;ctx.moveTo(x,y);ctx.arc(x,y,r,a-Math.PI/2,a+Math.PI/2);ctx.closePath()}ctx.fillStyle='rgba(189,109,14,.035)';ctx.strokeStyle='rgba(189,109,14,.22)';ctx.lineWidth=1;ctx.fill();ctx.stroke()}}
+if(document.querySelector('[data-operation="move"]').checked){ctx.beginPath();ctx.moveTo(...project([0,0]));for(const a of shown)ctx.lineTo(...project(a.point));ctx.strokeStyle='#007d83';ctx.lineWidth=1.8;ctx.stroke();for(const a of shown){if(a.distance<25)continue;const p=project(a.previous),q=project(a.point),angle=Math.atan2(q[1]-p[1],q[0]-p[0]),m=[p[0]*.45+q[0]*.55,p[1]*.45+q[1]*.55];ctx.beginPath();ctx.moveTo(...m);ctx.lineTo(m[0]-5*Math.cos(angle-.5),m[1]-5*Math.sin(angle-.5));ctx.moveTo(...m);ctx.lineTo(m[0]-5*Math.cos(angle+.5),m[1]-5*Math.sin(angle+.5));ctx.stroke()}}
+if($('truthToggle').checked){const labelBoxes=[];const cleared=new Set(shown.filter(a=>a.category==='clear_success').map(a=>a.channel));for(const source of c.sources){if($('channelSelect').value&&source.channel!==Number($('channelSelect').value))continue;const [x,y]=project([source.x,source.y]);ctx.strokeStyle=cleared.has(source.channel)?'#778c84':'#bd6d0e';ctx.fillStyle='#fff9e9';ctx.beginPath();ctx.moveTo(x,y-7);ctx.lineTo(x+7,y);ctx.lineTo(x,y+7);ctx.lineTo(x-7,y);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#846021';ctx.font='11px system-ui';const label=(source.direction==null?'全向':'定向')+source.channel,lw=ctx.measureText(label).width,lx=Math.min(x+9,x1-lw-2),ly=Math.max(y0+13,y-6),box=[lx,ly-12,lx+lw,ly+2];if(!labelBoxes.some(b=>box[0]<b[2]+3&&box[2]>b[0]-3&&box[1]<b[3]+3&&box[3]>b[1]-3)){ctx.fillText(label,lx,ly);labelBoxes.push(box)}}}
+hitMarks=[];for(const a of shown.filter(visible)){let [x,y]=project(a.point);if(a.kind==='measure'&&$('bearingToggle').checked&&a.bearing!=null){const angle=a.bearing*Math.PI/180;ctx.strokeStyle='#8cb0df';ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+200*scale*Math.cos(angle),y-200*scale*Math.sin(angle));ctx.stroke();ctx.setLineDash([])}ctx.strokeStyle=colors[a.category];ctx.fillStyle=colors[a.category];ctx.lineWidth=1.8;ctx.beginPath();if(a.category==='measure'){ctx.arc(x,y,3.3,0,2*Math.PI);ctx.fill()}else if(a.category==='clear_success'){ctx.fillRect(x-4,y-4,8,8)}else{ctx.moveTo(x-4,y-4);ctx.lineTo(x+4,y+4);ctx.moveTo(x-4,y+4);ctx.lineTo(x+4,y-4);ctx.stroke()}hitMarks.push({x,y,a})}
+let [rx,ry]=project(shown.at(-1)?.point||[0,0]);ctx.fillStyle='#142c3a';ctx.beginPath();ctx.arc(rx,ry,5,0,2*Math.PI);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();if(selected){const [x,y]=project(selected.point);ctx.strokeStyle='#142c3a';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,10,0,2*Math.PI);ctx.stroke()}ctx.restore();ctx.strokeStyle='#c6d5d8';ctx.lineWidth=1;ctx.strokeRect(x0,y0,x1-x0,y1-y0);ctx.fillStyle='#58717e';ctx.font='12px system-ui';ctx.textAlign='center';for(let v=Math.ceil(-bound/tick)*tick;v<=bound;v+=tick){const [x,y]=project([v,v]);ctx.fillText(v,x,y1+19);ctx.textAlign='right';ctx.fillText(v,x0-8,y+4);ctx.textAlign='center'}ctx.fillText('东向 x（米）',cx,height-10);ctx.save();ctx.translate(16,cy);ctx.rotate(-Math.PI/2);ctx.fillText('北向 y（米）',0,0);ctx.restore();ctx.textAlign='left';ctx.fillStyle='#142c3a';ctx.fillText('原点',cx+7,cy+16)}
+function nearest(event){const rect=canvas.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top;let best=null,dist=Infinity;for(const m of hitMarks){const d=Math.hypot(x-m.x,y-m.y);if(d<dist){dist=d;best=m}}return dist<14?best:null}
+canvas.addEventListener('mousemove',event=>{const mark=nearest(event),tip=$('tooltip');canvas.style.cursor=mark?'pointer':'default';if(!mark){tip.style.display='none';return}tip.textContent='第 '+mark.a.index+' 步 · '+names[mark.a.category]+' · 频道 '+mark.a.channel+' · '+number(mark.a.time)+' 秒';tip.style.display='block';tip.style.left=Math.min(mark.x+13,width-tip.offsetWidth-8)+'px';tip.style.top=Math.max(38,mark.y-35)+'px'});
+canvas.addEventListener('mouseleave',()=>$('tooltip').style.display='none');canvas.addEventListener('click',event=>{const mark=nearest(event);if(mark)selectAction(mark.a)});
+$('download').addEventListener('click',()=>{const link=document.createElement('a');link.download='policy3_seed_'+current().seed+'_step_'+step+'.png';link.href=canvas.toDataURL('image/png');link.click()});
+new ResizeObserver(draw).observe(canvas.parentElement);openCase();
+status.hidden=true;
+})();
+</script>
+</body></html>

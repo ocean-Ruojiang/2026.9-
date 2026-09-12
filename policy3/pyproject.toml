@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cumcm-policy3"
+version = "0.1.0"
+description = "Directional-source inference and staged coverage policy for CUMCM problem B"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24,<3"]
+
+[tool.setuptools.packages.find]
+include = ["strategy3*"]
+
+[tool.setuptools.package-data]
+strategy3 = ["assets/*.json"]

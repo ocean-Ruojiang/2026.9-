@@ -1,0 +1,186 @@
+{
+  "domain_radius_m": 1800,
+  "minimum_receive_radius_m": 1000,
+  "emission_angle_deg": 180,
+  "stations": [
+    {
+      "id": "O",
+      "group": "origin",
+      "x": 0,
+      "y": 0,
+      "radius_m": 0,
+      "angle_deg": 0
+    },
+    {
+      "id": "I1",
+      "group": "I",
+      "x": 995.0,
+      "y": 0.0,
+      "radius_m": 995,
+      "angle_deg": 0.0
+    },
+    {
+      "id": "I2",
+      "group": "I",
+      "x": 620.37,
+      "y": 777.92,
+      "radius_m": 995,
+      "angle_deg": 51.42857142857143
+    },
+    {
+      "id": "I3",
+      "group": "I",
+      "x": -221.41,
+      "y": 970.05,
+      "radius_m": 995,
+      "angle_deg": 102.85714285714286
+    },
+    {
+      "id": "I4",
+      "group": "I",
+      "x": -896.46,
+      "y": 431.71,
+      "radius_m": 995,
+      "angle_deg": 154.28571428571428
+    },
+    {
+      "id": "I5",
+      "group": "I",
+      "x": -896.46,
+      "y": -431.71,
+      "radius_m": 995,
+      "angle_deg": 205.71428571428572
+    },
+    {
+      "id": "I6",
+      "group": "I",
+      "x": -221.41,
+      "y": -970.05,
+      "radius_m": 995,
+      "angle_deg": 257.14285714285717
+    },
+    {
+      "id": "I7",
+      "group": "I",
+      "x": 620.37,
+      "y": -777.92,
+      "radius_m": 995,
+      "angle_deg": 308.57142857142856
+    },
+    {
+      "id": "M1",
+      "group": "M",
+      "x": 1617.24,
+      "y": 778.82,
+      "radius_m": 1795,
+      "angle_deg": 25.714285714285715
+    },
+    {
+      "id": "M2",
+      "group": "M",
+      "x": 399.43,
+      "y": 1750.0,
+      "radius_m": 1795,
+      "angle_deg": 77.14285714285714
+    },
+    {
+      "id": "M3",
+      "group": "M",
+      "x": -1119.16,
+      "y": 1403.39,
+      "radius_m": 1795,
+      "angle_deg": 128.57142857142858
+    },
+    {
+      "id": "M4",
+      "group": "M",
+      "x": -1795.0,
+      "y": 0.0,
+      "radius_m": 1795,
+      "angle_deg": 180.0
+    },
+    {
+      "id": "M5",
+      "group": "M",
+      "x": -1119.16,
+      "y": -1403.39,
+      "radius_m": 1795,
+      "angle_deg": 231.42857142857144
+    },
+    {
+      "id": "M6",
+      "group": "M",
+      "x": 399.43,
+      "y": -1750.0,
+      "radius_m": 1795,
+      "angle_deg": 282.8571428571429
+    },
+    {
+      "id": "M7",
+      "group": "M",
+      "x": 1617.24,
+      "y": -778.82,
+      "radius_m": 1795,
+      "angle_deg": 334.2857142857143
+    },
+    {
+      "id": "E1",
+      "group": "E",
+      "x": 2055.0,
+      "y": 0.0,
+      "radius_m": 2055,
+      "angle_deg": 0.0
+    },
+    {
+      "id": "E2",
+      "group": "E",
+      "x": 1281.27,
+      "y": 1606.66,
+      "radius_m": 2055,
+      "angle_deg": 51.42857142857143
+    },
+    {
+      "id": "E3",
+      "group": "E",
+      "x": -457.28,
+      "y": 2003.48,
+      "radius_m": 2055,
+      "angle_deg": 102.85714285714286
+    },
+    {
+      "id": "E4",
+      "group": "E",
+      "x": -1851.49,
+      "y": 891.63,
+      "radius_m": 2055,
+      "angle_deg": 154.28571428571428
+    },
+    {
+      "id": "E5",
+      "group": "E",
+      "x": -1851.49,
+      "y": -891.63,
+      "radius_m": 2055,
+      "angle_deg": 205.71428571428572
+    },
+    {
+      "id": "E6",
+      "group": "E",
+      "x": -457.28,
+      "y": -2003.48,
+      "radius_m": 2055,
+      "angle_deg": 257.14285714285717
+    },
+    {
+      "id": "E7",
+      "group": "E",
+      "x": 1281.27,
+      "y": -1606.66,
+      "radius_m": 2055,
+      "angle_deg": 308.57142857142856
+    }
+  ],
+  "certificate_file": "coverage_certificate_22.json",
+  "continuous_geometric_check_passed": true,
+  "note": "22 stations including the starting point. Not claimed globally minimal. Coverage does not by itself guarantee successful localization/clearing or lower travel time."
+}

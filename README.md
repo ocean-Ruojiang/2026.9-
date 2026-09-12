@@ -1,13 +1,16 @@
-# B 题：本地模拟器与 Policy 2
+# B 题：本地模拟器、Policy 2 与 Policy 3
 
-用于无线电干扰源自动搜索、定位和清除策略的本地实验。项目分为两个独立部分：
+用于无线电干扰源自动搜索、定位和清除策略的本地实验。模拟器与策略分别维护：
 
 | 目录 | 内容 | 使用说明 |
 |---|---|---|
 | `local_simulator/` | 自制 HTTP 模拟器、批量运行器、独立示例策略与测试；仅依赖 Python 标准库 | [模拟器 README](local_simulator/README.md) |
 | `policy2/` | 策略2：覆盖主任务、收益评分、可移动站点、绕路预算及锁定清除；需要 NumPy | [Policy 2 README](policy2/README.md) |
+| `policy3/` | 第四问：正负反馈联合推断、22站分层覆盖、域外剩余频道巡检及锁定清除；需要 NumPy | [Policy 3 README](policy3/README.md) |
 
-策略2支持第三问的全向干扰源。模拟器依据题目协议自行实现，尚不能替代官方演练或正式测试。
+策略2支持第三问的全向干扰源；策略3支持第四问的全向与定向混合源。模拟器依据题目协议自行实现，尚不能替代官方演练或正式测试。
+
+第四问可从 `policy3/` 运行 `python -m strategy3 local-sim --cases 1 --directional-count 6 --config configs/balanced.json --output results/first_run`。完整实现、数学说明与15局验收入口见 [Policy 3 README](policy3/README.md)。
 
 ## 快速开始
 
