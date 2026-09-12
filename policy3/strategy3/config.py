@@ -43,6 +43,7 @@ class Config:
     prediction_outcomes: int = 16
     max_template_ops: int = 3
     q2_provider: str = "heuristic"
+    patrol_order: str = "layered"
     local_radius_m: float = 600.0
     fallback_spacing_m: float = 24.0
     real_limit_s: float = 600.0
@@ -52,6 +53,8 @@ class Config:
     http_retries: int = 2
 
     def validate(self):
+        if self.patrol_order not in ('layered', 'interleaved'):
+            raise ValueError('patrol_order must be layered or interleaved')
         physical = dict(domain_radius=1800.,recv_min=1000.,recv_max=1500.,speed=5.,
             near_radius=5.,clear_radius=20.,error_deg=1.,reading_step_deg=.01,
             measure_seconds=5.,switch_seconds=1.,clear_success_seconds=5.,clear_failure_seconds=3.)

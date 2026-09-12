@@ -20,10 +20,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--seed", type=int, default=20260913)
     parser.add_argument("--real-limit", type=float, default=600.)
     parser.add_argument("--virtual-limit", type=float, default=360000.)
+    parser.add_argument("--cases", type=int, choices=range(1,16), default=15,
+                        help="Run the first N fixed cases; 10 selects the original random cases")
     args = parser.parse_args(argv)
     output = args.output or ROOT / "results" / ("acceptance_" + datetime.now().strftime("%Y%m%d_%H%M%S_%f"))
     try:
-        return run_suite(acceptance_cases(args.seed), args.config, output, args.real_limit, args.virtual_limit)
+        return run_suite(acceptance_cases(args.seed)[:args.cases], args.config, output, args.real_limit, args.virtual_limit)
     except (ValueError, OSError) as exc:
         parser.error(str(exc))
     return 2

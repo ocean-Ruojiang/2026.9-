@@ -57,6 +57,8 @@ python tools/run_acceptance.py --config configs/balanced.json --output results/a
 
 ## 配置
 
+新增交错巡检实验配置 `configs/interleaved.json`：在 balanced 的 45 秒预算上，设置 `patrol_order="interleaved"`，使圈内按 I1→M1→I2→M2→…→I7→M7 推进。原 layered 配置仍保留。运行前 10 个固定随机场景可使用 `python tools/run_acceptance.py --cases 10 --config configs/interleaved.json --output results/interleaved_new`。见 [实验说明](docs/交错巡检实验.md)。
+
 | 配置 | 含义 |
 |---|---|
 | `configs/default.json` | 初始基线：90 秒绕路预算、192 联合样本、40→5 米自适应格、最多 1200 格 |

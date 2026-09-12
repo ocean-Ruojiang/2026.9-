@@ -114,7 +114,20 @@ class Coverage:
         if self.selected is not None and self.pending_channels(self.selected,world):
             return self.selected
         self.selected=None
-        for group in ('O','I','M','E'):
+        if self.cfg.patrol_order == 'interleaved':
+            # Fixed angular sweep: do not let local detours reverse the sweep.
+            # Skip resolved station tasks; retain a selected station until done.
+            order = ['O'] + [f'{g}{i}' for i in range(1,8) for g in ('I','M')]
+            for sid in order:
+                station = self.by_id[sid]
+                if self.pending_channels(station,world):
+                    self.stage = station.group
+                    self.selected = station
+                    return station
+            groups = ('E',)
+        else:
+            groups = ('O','I','M','E')
+        for group in groups:
             options=[s for s in self.stations if s.group==group and self.pending_channels(s,world)]
             if options:
                 self.stage=group
@@ -170,6 +183,7 @@ class Coverage:
 
     def summary(self):
         return dict(layout='staggered_22',verified_cells=len(self.boxes),stage=self.stage,
+            patrol_order=self.cfg.patrol_order,
             selected_station=None if self.selected is None else self.selected.id,
             visited_stations=self.visited,
             station_channel_measurements=sum(map(len,self.measured.values())),
