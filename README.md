@@ -5,6 +5,7 @@
 | 目录 | 内容 | 使用说明 |
 |---|---|---|
 | `problem2/` | 第二检测点优化、Tkinter 可视化、单例与并行计算；可独立移植 | [第二问 README](problem2/README.md) |
+| `simulator_gui/` | 工作空间自制模拟器及完整Tk可视化；手工布源、HTTP接口、行为轨迹，可独立移植 | [桌面模拟器 README](simulator_gui/README.md) |
 | `local_simulator/` | 自制 HTTP 模拟器、批量运行器、独立示例策略与测试；仅依赖 Python 标准库 | [模拟器 README](local_simulator/README.md) |
 | `policy2/` | 策略2：覆盖主任务、收益评分、可移动站点、绕路预算及锁定清除；需要 NumPy | [Policy 2 README](policy2/README.md) |
 
@@ -26,6 +27,16 @@ python problem2/run_solver.py --config problem2/examples/quick.json --output pro
 ```
 
 `problem2/` 可单独复制使用，包含完整依赖链、可安装项目、Windows 启动脚本和验证样例。参数、精度口径与移植方法见 [第二问说明](problem2/README.md)。
+
+## 自制模拟器与可视化
+
+```bash
+python simulator_gui/run_gui.py
+```
+
+可直接下载 [模拟器可移植 ZIP](packages/simulator_gui_portable_20260912.zip)，解压后运行其中的 `simulator_gui/run_gui.py`。
+
+仅需 Python 3.10+ 与 Tkinter；也可在 `simulator_gui/` 双击 `start_gui.bat`。地图布源、参数、接口调用、无界面服务和样例见 [桌面模拟器 README](simulator_gui/README.md)。该目录与 `local_simulator/` 是不同实现；前者用于可视化交互，后者提供已有的批量实验流程。
 
 ## 策略2快速开始
 

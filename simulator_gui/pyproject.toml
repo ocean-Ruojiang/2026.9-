@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cumcm-simulator-gui"
+version = "0.1.0"
+description = "Portable interference simulator with Tk desktop visualization and HTTP API"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+interference-sim-gui = "interference_simulator_gui:main"
+interference-sim-server = "simulator_cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+py-modules = ["interference_simulator_core", "interference_simulator_gui", "simulator_cli"]

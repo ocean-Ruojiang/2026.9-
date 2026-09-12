@@ -1,0 +1,20 @@
+[
+  {
+    "channel": 1,
+    "x": 100,
+    "y": 0,
+    "kind": "omni",
+    "receive_radius_m": 1200,
+    "direction_deg": 0,
+    "cleared": false
+  },
+  {
+    "channel": 2,
+    "x": -300,
+    "y": 300,
+    "kind": "directional",
+    "receive_radius_m": 1100,
+    "direction_deg": 270,
+    "cleared": false
+  }
+]
