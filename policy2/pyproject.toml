@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "strategy2-bq3"
+version = "0.1.0"
+description = "Coverage-constrained reward scheduling for B question 3"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24,<3"]
+
+[project.scripts]
+strategy2 = "strategy2.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["strategy2*"]
