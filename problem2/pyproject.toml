@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cumcm-problem2"
+version = "0.1.0"
+description = "Second observation point optimization and Tk visualization"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24", "scipy>=1.10"]
+
+[project.scripts]
+problem2-gui = "problem2_gui:main"
+problem2-solve = "problem2_cli:main"
+problem2-batch = "problem2_parallel:_cli_main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+py-modules = ["problem2_optimizer", "problem2_gui", "problem2_parallel", "problem2_cli", "diameter", "polygon_update", "problem_variables"]

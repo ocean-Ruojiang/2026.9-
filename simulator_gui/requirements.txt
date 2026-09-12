@@ -1,0 +1,1 @@
+# Python standard library only. GUI additionally requires Tcl/Tk and a desktop.
